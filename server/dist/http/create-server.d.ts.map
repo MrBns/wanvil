@@ -1,0 +1,1 @@
+{"version":3,"file":"create-server.d.ts","sourceRoot":"","sources":["../../src/http/create-server.ts"],"names":[],"mappings":"AACA,OAAO,EAAsC,KAAK,MAAM,EAAuB,MAAM,WAAW,CAAC;AAIjG,OAAO,KAAK,EAAE,MAAM,EAAE,MAAM,kBAAkB,CAAC;AAC/C,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,kBAAkB,CAAC;AAqClD,wBAAgB,gBAAgB,CAAC,MAAM,EAAE,SAAS,EAAE,GAAG,EAAE,MAAM,GAAG,MAAM,CAavE"}

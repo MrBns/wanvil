@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model RunHistory {
+  id                Int      @id @default(autoincrement())
+  created_at        DateTime @default(now())
+  label             String
+  args_json         String
+  fork_url          String
+  fork_block_number String
+  mnemonic          String
+
+  @@map("run_history")
+}
+
+model LastConfig {
+  id                Int    @id @default(autoincrement())
+  fork_url          String
+  fork_block_number String
+  mnemonic          String
+
+  @@map("last_config")
+}
