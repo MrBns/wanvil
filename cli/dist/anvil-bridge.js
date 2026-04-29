@@ -17,6 +17,10 @@ export class AnvilBridge {
     lineBuffer = "";
     lastArgs = [];
     events = new EventEmitter();
+    echoToTerminal;
+    constructor(options) {
+        this.echoToTerminal = options?.echoToTerminal ?? false;
+    }
     // ─── IAnvilBridge ───────────────────────────────────────────────
     start(args) {
         if (this.process) {
@@ -35,8 +39,10 @@ export class AnvilBridge {
                 this.logs.shift();
             }
             this.events.emit("log", line);
-            // Mirror to terminal so CLI users see native output
-            process.stdout.write(`${line}\n`);
+            // Mirror to terminal only when explicitly requested via --anvil-logs
+            if (this.echoToTerminal) {
+                process.stdout.write(`${line}\n`);
+            }
         };
         const handleChunk = (data) => {
             const text = this.lineBuffer + data.toString();

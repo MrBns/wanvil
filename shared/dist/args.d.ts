@@ -10,8 +10,16 @@ export interface WanvilFlags {
     guiPort: number;
     /** Disable the GUI server entirely; terminal-only mode. */
     noGui: boolean;
-    /** Suppress auto-opening the browser. */
-    noOpen: boolean;
+    /** Explicitly open the browser on startup. */
+    openBrowser: boolean;
+    /** Mirror anvil stdout/stderr to the terminal. */
+    anvilLogs: boolean;
+    /** Print version and exit. */
+    version: boolean;
+    /** Print help text and exit. */
+    help: boolean;
+    /** Don't spawn anvil — assume it's already running on the default port. */
+    noAnvil: boolean;
     /**
      * Load an encrypted mnemonic preset by id.
      * When set, the CLI will prompt for a password to decrypt it
@@ -38,8 +46,24 @@ export declare const WANVIL_FLAG_DEFS: readonly [{
     readonly short: null;
     readonly hasValue: false;
 }, {
-    readonly long: "--no-open";
-    readonly short: null;
+    readonly long: "--open-browser";
+    readonly short: "-O";
+    readonly hasValue: false;
+}, {
+    readonly long: "--anvil-logs";
+    readonly short: "-AL";
+    readonly hasValue: false;
+}, {
+    readonly long: "--version";
+    readonly short: "-v";
+    readonly hasValue: false;
+}, {
+    readonly long: "--help";
+    readonly short: "-h";
+    readonly hasValue: false;
+}, {
+    readonly long: "--no-anvil";
+    readonly short: "-N";
     readonly hasValue: false;
 }, {
     readonly long: "--preset";

@@ -39,12 +39,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 7.7.0
- * Query Engine version: 75cbdc1eb7150937890ad5465d861175c6624711
+ * Prisma Client JS version: 7.8.0
+ * Query Engine version: 3c6e192761c0362d496ed980de936e2f3cebcd3a
  */
 Prisma.prismaVersion = {
-  client: "7.7.0",
-  engine: "75cbdc1eb7150937890ad5465d861175c6624711"
+  client: "7.8.0",
+  engine: "3c6e192761c0362d496ed980de936e2f3cebcd3a"
 }
 
 Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
@@ -122,8 +122,8 @@ exports.Prisma.ModelName = {
  */
 const config = {
   "previewFeatures": [],
-  "clientVersion": "7.7.0",
-  "engineVersion": "75cbdc1eb7150937890ad5465d861175c6624711",
+  "clientVersion": "7.8.0",
+  "engineVersion": "3c6e192761c0362d496ed980de936e2f3cebcd3a",
   "activeProvider": "sqlite",
   "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../shared/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n}\n\nmodel RunHistory {\n  id                Int      @id @default(autoincrement())\n  created_at        DateTime @default(now())\n  label             String\n  args_json         String\n  fork_url          String\n  fork_block_number String\n  mnemonic          String\n\n  @@map(\"run_history\")\n}\n\nmodel LastConfig {\n  id                Int    @id @default(autoincrement())\n  fork_url          String\n  fork_block_number String\n  mnemonic          String\n\n  @@map(\"last_config\")\n}\n"
 }

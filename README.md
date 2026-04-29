@@ -30,7 +30,7 @@ Your terminal still works exactly like before.
 | 🔑 | **Preset Manager** | Save and load encrypted mnemonics — no more copy-pasting seed phrases |
 | 📂 | **Run History** | See all past runs, reload any old config with one click |
 | 🌗 | **Light and Dark Mode** | Auto-detected from your system preferences |
-| 🖥️ | **Terminal Pass-through** | Everything anvil prints, wanvil prints too — fully transparent |
+| 🖥️ | **Terminal Pass-through** | Opt-in with `--anvil-logs` — everything anvil prints goes to your terminal too |
 
 ---
 
@@ -55,8 +55,8 @@ wanvil
 That's it. Three things happen:
 
 1. **anvil starts** — exactly like running `anvil` directly
-2. **GUI opens** at **http://localhost:4269** — the full dashboard
-3. **Terminal mirrors** all anvil output — you don't lose anything
+2. **GUI available** at **http://localhost:4269** — the full dashboard
+3. **Terminal stays clean** — pass `--anvil-logs` to mirror anvil output
 
 > Your terminal behaves the same as `anvil`. wanvil just adds a browser UI on top.
 
@@ -113,24 +113,55 @@ wanvil --gui-port 5000
 wanvil --no-gui
 ```
 
-**Start GUI but don't auto-open the browser:**
+**Start GUI and auto-open the browser:**
 
 ```bash
-wanvil --no-open
+wanvil --open-browser
+# or
+wanvil -O
+```
+
+**Mirror anvil output to the terminal:**
+
+```bash
+wanvil --anvil-logs
+# or
+wanvil -AL
+```
+
+**GUI-only mode (anvil already running externally):**
+
+```bash
+wanvil --no-anvil
+# or
+wanvil -N
+```
+
+> In this mode wanvil won't spawn anvil. It assumes anvil is already running on the standard port.
+
+**Print version:**
+
+```bash
+wanvil --version
+# or
+wanvil -v
 ```
 
 ### wanvil-specific Flags
 
 These are consumed by wanvil itself. Anvil never sees them.
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--gui-port <port>` | Port for the web dashboard | `4269` |
-| `--no-gui` | Disable the web dashboard entirely | `false` |
-| `--no-open` | Don't auto-open the browser tab | `false` |
-| `--preset <id>` | Load an encrypted mnemonic preset by ID | — |
-| `--save-preset` | Interactive: encrypt and save a new mnemonic | — |
-| `--log-level <level>` | Server log level (`info`, `debug`, `trace`, etc.) | `info` |
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--gui-port <port>` | | Port for the web dashboard | `4269` |
+| `--no-gui` | | Disable the web dashboard entirely | `false` |
+| `--open-browser` | `-O` | Auto-open the browser on startup | `false` |
+| `--anvil-logs` | `-AL` | Mirror anvil stdout/stderr to the terminal | `false` |
+| `--no-anvil` | `-N` | Don't spawn anvil; assume it’s already running | `false` |
+| `--version` | `-v` | Print wanvil version and exit | — |
+| `--preset <id>` | `-p` | Load an encrypted mnemonic preset by ID | — |
+| `--save-preset` | | Interactive: encrypt and save a new mnemonic | — |
+| `--log-level <level>` | | Server log level (`info`, `debug`, `trace`, etc.) | `info` |
 
 > **Everything else** (like `--fork-url`, `--accounts`, `--block-time`) passes through to anvil untouched.
 

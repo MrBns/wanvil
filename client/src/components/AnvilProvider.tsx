@@ -1,4 +1,4 @@
-import { ArrowDown, Clock, GitFork, HelpCircle, History, Key, Loader2, Play, Terminal } from "lucide-react";
+import { Clock, GitFork, HelpCircle, History, Key, Loader2, Pin, PinOff, Play, Terminal } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   type AnvilStartConfig,
@@ -47,7 +47,7 @@ export function AnvilProvider({ children }: { children: React.ReactNode }) {
   const setLogs = useAnvilStore((state) => state.setLogs);
   const controlError = useAnvilStore((state) => state.controlError);
   const setControlError = useAnvilStore((state) => state.setControlError);
-  const { containerRef: logsContainerRef, isPinnedToBottom, scrollToBottom } =
+  const { containerRef: logsContainerRef, isPinned, togglePin } =
     useStickyTerminalScroll([logs, starting]);
   useEffect(() => {
     let cancelled = false;
@@ -396,6 +396,19 @@ export function AnvilProvider({ children }: { children: React.ReactNode }) {
             <div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]" />
             <div className="w-2.5 h-2.5 rounded-full bg-[#22c55e]" />
             <span className="ml-3 text-xs font-mono text-terminal-muted">anvil stdout / stderr</span>
+            <button
+              type="button"
+              onClick={togglePin}
+              title={isPinned ? "Unpin auto-scroll" : "Pin to latest (auto-scroll)"}
+              className={`ml-auto inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors border ${
+                isPinned
+                  ? "border-[#22c55e]/40 bg-[#22c55e]/10 text-[#22c55e]"
+                  : "border-terminal-border bg-transparent text-terminal-muted hover:text-terminal-foreground hover:bg-terminal-badge"
+              }`}
+            >
+              {isPinned ? <Pin size={12} /> : <PinOff size={12} />}
+              {isPinned ? "Pinned" : "Pin"}
+            </button>
           </div>
           <div ref={logsContainerRef} className="flex-1 p-4 font-mono text-[13px] leading-relaxed text-terminal-foreground overflow-y-auto w-full space-y-0.5 min-h-0">
             {logs.length === 0 && <span className="text-terminal-muted">Waiting for log lines…</span>}
@@ -411,16 +424,6 @@ export function AnvilProvider({ children }: { children: React.ReactNode }) {
             ))}
           </div>
         </div>
-          {!isPinnedToBottom && (
-            <button
-              type="button"
-              onClick={scrollToBottom}
-              className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-full border border-terminal-border bg-terminal-header px-3 py-1.5 text-xs font-medium text-terminal-foreground transition-colors hover:bg-terminal-badge"
-            >
-              <ArrowDown size={12} />
-              Scroll to latest
-            </button>
-          )}
         </div>
       </div>
     );

@@ -1,11 +1,12 @@
 import {
-  ArrowDown,
   Clock,
   Eye,
   EyeOff,
   GitFork,
   History,
   Key,
+  Pin,
+  PinOff,
   Play,
   RefreshCw,
   RotateCcw,
@@ -52,7 +53,7 @@ export default function AnvilManagerPage() {
   const [logs, setLogs] = useState<LogLine[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("logs");
-  const { containerRef: logsContainerRef, isPinnedToBottom, scrollToBottom } =
+  const { containerRef: logsContainerRef, isPinned, togglePin } =
     useStickyTerminalScroll([logs, activeTab]);
 
   useEffect(() => {
@@ -397,6 +398,19 @@ export default function AnvilManagerPage() {
             <span className="ml-3 text-xs font-mono text-terminal-muted">
               Terminal — anvil process
             </span>
+            <button
+              type="button"
+              onClick={togglePin}
+              title={isPinned ? "Unpin auto-scroll" : "Pin to latest (auto-scroll)"}
+              className={`ml-auto inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors border ${
+                isPinned
+                  ? "border-[#22c55e]/40 bg-[#22c55e]/10 text-[#22c55e]"
+                  : "border-terminal-border bg-transparent text-terminal-muted hover:text-terminal-foreground hover:bg-terminal-badge"
+              }`}
+            >
+              {isPinned ? <Pin size={12} /> : <PinOff size={12} />}
+              {isPinned ? "Pinned" : "Pin"}
+            </button>
           </div>
           <div
             ref={logsContainerRef}
@@ -419,16 +433,6 @@ export default function AnvilManagerPage() {
             )}
           </div>
         </div>
-          {!isPinnedToBottom && (
-            <button
-              type="button"
-              onClick={scrollToBottom}
-              className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-full border border-terminal-border bg-terminal-header px-3 py-1.5 text-xs font-medium text-terminal-foreground transition-colors hover:bg-terminal-badge"
-            >
-              <ArrowDown size={12} />
-              Scroll to latest
-            </button>
-          )}
         </div>
       )}
 

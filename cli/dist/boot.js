@@ -11,6 +11,9 @@
  *  7. Wire up SIGINT/SIGTERM for clean shutdown
  */
 import { execFileSync, execSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import readline from "node:readline";
 import { AnvilBridge } from "./anvil-bridge.js";
 import { printBanner } from "./banner.js";
@@ -19,6 +22,17 @@ import { PresetManager } from "./preset-manager.js";
 export async function boot() {
     const { wanvil: flags, anvil: anvilArgs } = parseArgs(process.argv.slice(2));
     const presets = new PresetManager();
+    // ─── Version ─────────────────────────────────────────────────────
+    if (flags.version) {
+        const version = getPackageVersion();
+        process.stdout.write(`wanvil ${version}\n`);
+        process.exit(0);
+    }
+    // ─── Help ────────────────────────────────────────────────────────
+    if (flags.help) {
+        printHelp();
+        process.exit(0);
+    }
     // ─── Save Preset Flow ────────────────────────────────────────────
     if (flags.savePreset) {
         await savePresetFlow(presets);
@@ -37,19 +51,27 @@ export async function boot() {
             process.exit(1);
         }
     }
-    const anvilAvailabilityError = getAnvilAvailabilityError();
-    if (anvilAvailabilityError) {
-        process.stderr.write(`\x1b[31m✗ ${anvilAvailabilityError}\x1b[0m\n`);
-        process.exit(1);
+    // ─── Anvil availability check (skip when --no-anvil) ─────────────
+    if (!flags.noAnvil) {
+        const anvilAvailabilityError = getAnvilAvailabilityError();
+        if (anvilAvailabilityError) {
+            process.stderr.write(`\x1b[31m✗ ${anvilAvailabilityError}\x1b[0m\n`);
+            process.exit(1);
+        }
     }
     // ─── Print Banner ────────────────────────────────────────────────
     printBanner(flags.guiPort, flags.noGui);
     // ─── Create Bridge & Start Anvil ─────────────────────────────────
-    const bridge = new AnvilBridge();
-    bridge.start(anvilArgs);
-    bridge.onClose((code, signal) => {
-        process.stdout.write(`\n  \x1b[33m●\x1b[0m Anvil process exited (code=${code}, signal=${signal})\n`);
-    });
+    const bridge = new AnvilBridge({ echoToTerminal: flags.anvilLogs });
+    if (!flags.noAnvil) {
+        bridge.start(anvilArgs);
+        bridge.onClose((code, signal) => {
+            process.stdout.write(`\n  \x1b[33m●\x1b[0m Anvil process exited (code=${code}, signal=${signal})\n`);
+        });
+    }
+    else {
+        process.stdout.write(`  \x1b[36m●\x1b[0m --no-anvil mode: skipping anvil spawn (assuming anvil is running externally)\n\n`);
+    }
     // ─── Boot GUI Server ─────────────────────────────────────────────
     let serverShutdown = null;
     if (!flags.noGui) {
@@ -71,8 +93,8 @@ export async function boot() {
                 presetManager: presets,
             });
             serverShutdown = server.shutdown;
-            // Auto-open browser
-            if (!flags.noOpen) {
+            // Auto-open browser (opt-in via --open-browser / -O)
+            if (flags.openBrowser) {
                 setTimeout(() => {
                     const url = `http://localhost:${flags.guiPort}`;
                     const cmd = process.platform === "darwin"
@@ -130,6 +152,58 @@ function getAnvilAvailabilityError() {
         }
         return `Failed to start anvil: ${err instanceof Error ? err.message : String(err)}`;
     }
+}
+function getPackageVersion() {
+    try {
+        const __dirname = dirname(fileURLToPath(import.meta.url));
+        // Works from both cli/src/ (dev) and cli/dist/ (built)
+        const pkgPath = resolve(__dirname, "../../package.json");
+        const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+        return pkg.version ?? "unknown";
+    }
+    catch {
+        return "unknown";
+    }
+}
+function printHelp() {
+    const version = getPackageVersion();
+    const b = "\x1b[1m"; // bold
+    const d = "\x1b[2m"; // dim
+    const r = "\x1b[0m"; // reset
+    const c = "\x1b[36m"; // cyan
+    const lines = [
+        "",
+        `  ${b}wanvil${r} ${d}v${version}${r}`,
+        `  ${d}Wrapped Anvil — Local Ethereum Development${r}`,
+        "",
+        `  ${b}USAGE${r}`,
+        `    wanvil ${d}[wanvil-flags]${r} ${d}[...anvil-args]${r}`,
+        "",
+        `  ${b}WANVIL FLAGS${r}`,
+        `    ${c}--gui-port${r} ${d}<port>${r}      Port for the web dashboard ${d}(default: 4269)${r}`,
+        `    ${c}--no-gui${r}              Disable the web dashboard entirely`,
+        `    ${c}--open-browser${r}, ${c}-O${r}    Auto-open the browser on startup`,
+        `    ${c}--anvil-logs${r}, ${c}-AL${r}     Mirror anvil stdout/stderr to the terminal`,
+        `    ${c}--no-anvil${r}, ${c}-N${r}        Don't spawn anvil (assume it's already running)`,
+        `    ${c}--preset${r} ${d}<id>${r}, ${c}-p${r}     Load an encrypted mnemonic preset`,
+        `    ${c}--save-preset${r}         Save a new encrypted mnemonic preset`,
+        `    ${c}--log-level${r} ${d}<level>${r}   Server log level ${d}(default: info)${r}`,
+        `    ${c}--version${r}, ${c}-v${r}         Print version and exit`,
+        `    ${c}--help${r}, ${c}-h${r}            Show this help message`,
+        "",
+        `  ${b}ANVIL ARGS${r}`,
+        `    Everything else is forwarded directly to ${c}anvil${r}.`,
+        `    No ${d}--${r} separator needed.`,
+        "",
+        `  ${b}EXAMPLES${r}`,
+        `    ${d}$${r} wanvil`,
+        `    ${d}$${r} wanvil --fork-url https://eth-mainnet.g.alchemy.com/v2/KEY`,
+        `    ${d}$${r} wanvil --no-anvil -O`,
+        `    ${d}$${r} wanvil --preset 1 --anvil-logs`,
+        `    ${d}$${r} wanvil --save-preset`,
+        "",
+    ];
+    process.stdout.write(lines.join("\n"));
 }
 async function loadBootServer() {
     try {

@@ -1,50 +1,21 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
-const BOTTOM_THRESHOLD = 24;
-
-function isNearBottom(element: HTMLDivElement): boolean {
-  return element.scrollHeight - element.scrollTop - element.clientHeight <= BOTTOM_THRESHOLD;
-}
-
+/**
+ * Hook for terminal scroll behaviour with an explicit "pin to bottom" toggle.
+ *
+ * - `isPinned`: When true, the terminal auto-scrolls to the latest line on
+ *   every content change. Defaults to `false` (user scrolls freely).
+ * - `togglePin`: Flips the pin state. When turning ON, also performs an
+ *   immediate scroll-to-bottom.
+ * - `scrollToBottom`: Imperatively scrolls to the bottom without affecting
+ *   the pin state.
+ */
 export function useStickyTerminalScroll(deps: readonly unknown[]) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isPinnedToBottom, setIsPinnedToBottom] = useState(true);
-  const pinnedRef = useRef(true);
+  const [isPinned, setIsPinned] = useState(false);
+  const pinnedRef = useRef(false);
 
-  useEffect(() => {
-    const element = containerRef.current;
-    if (!element) return;
-
-    let frameId = 0;
-
-    const syncPinnedState = () => {
-      const nextPinned = isNearBottom(element);
-      if (nextPinned !== pinnedRef.current) {
-        pinnedRef.current = nextPinned;
-        setIsPinnedToBottom(nextPinned);
-      }
-    };
-
-    syncPinnedState();
-
-    const onScroll = () => {
-      if (frameId) return;
-      frameId = window.requestAnimationFrame(() => {
-        frameId = 0;
-        syncPinnedState();
-      });
-    };
-
-    element.addEventListener("scroll", onScroll, { passive: true });
-
-    return () => {
-      if (frameId) {
-        window.cancelAnimationFrame(frameId);
-      }
-      element.removeEventListener("scroll", onScroll);
-    };
-  }, []);
-
+  // Auto-scroll when pinned and content changes
   useEffect(() => {
     const element = containerRef.current;
     if (!element || !pinnedRef.current) return;
@@ -52,7 +23,7 @@ export function useStickyTerminalScroll(deps: readonly unknown[]) {
     element.scrollTop = element.scrollHeight;
   }, deps);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     const element = containerRef.current;
     if (!element) return;
 
@@ -60,13 +31,26 @@ export function useStickyTerminalScroll(deps: readonly unknown[]) {
       top: element.scrollHeight,
       behavior: "smooth",
     });
-    pinnedRef.current = true;
-    setIsPinnedToBottom(true);
-  };
+  }, []);
+
+  const togglePin = useCallback(() => {
+    const next = !pinnedRef.current;
+    pinnedRef.current = next;
+    setIsPinned(next);
+
+    // When pinning ON, immediately scroll to bottom
+    if (next) {
+      const element = containerRef.current;
+      if (element) {
+        element.scrollTop = element.scrollHeight;
+      }
+    }
+  }, []);
 
   return {
     containerRef,
-    isPinnedToBottom,
+    isPinned,
+    togglePin,
     scrollToBottom,
   };
 }

@@ -61,8 +61,20 @@ function applyFlag(flags, flag, value) {
         case "--no-gui":
             flags.noGui = true;
             break;
-        case "--no-open":
-            flags.noOpen = true;
+        case "--open-browser":
+            flags.openBrowser = true;
+            break;
+        case "--anvil-logs":
+            flags.anvilLogs = true;
+            break;
+        case "--version":
+            flags.version = true;
+            break;
+        case "--help":
+            flags.help = true;
+            break;
+        case "--no-anvil":
+            flags.noAnvil = true;
             break;
         case "--preset":
             if (value)

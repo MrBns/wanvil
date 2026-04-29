@@ -15,12 +15,22 @@ import type { IAnvilBridge } from "../../shared/dist/bridge.js";
 
 const MAX_LOG_LINES = 2000;
 
+interface AnvilBridgeOptions {
+  /** Whether to mirror anvil stdout/stderr to the terminal. Default: false. */
+  echoToTerminal?: boolean;
+}
+
 export class AnvilBridge implements IAnvilBridge {
   private process: ChildProcess | null = null;
   private logs: string[] = [];
   private lineBuffer = "";
   private lastArgs: string[] = [];
   private readonly events = new EventEmitter();
+  private readonly echoToTerminal: boolean;
+
+  constructor(options?: AnvilBridgeOptions) {
+    this.echoToTerminal = options?.echoToTerminal ?? false;
+  }
 
   // ─── IAnvilBridge ───────────────────────────────────────────────
 
@@ -45,8 +55,10 @@ export class AnvilBridge implements IAnvilBridge {
       }
       this.events.emit("log", line);
 
-      // Mirror to terminal so CLI users see native output
-      process.stdout.write(`${line}\n`);
+      // Mirror to terminal only when explicitly requested via --anvil-logs
+      if (this.echoToTerminal) {
+        process.stdout.write(`${line}\n`);
+      }
     };
 
     const handleChunk = (data: Buffer): void => {

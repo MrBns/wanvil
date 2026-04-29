@@ -15,8 +15,20 @@ export interface WanvilFlags {
   /** Disable the GUI server entirely; terminal-only mode. */
   noGui: boolean;
 
-  /** Suppress auto-opening the browser. */
-  noOpen: boolean;
+  /** Explicitly open the browser on startup. */
+  openBrowser: boolean;
+
+  /** Mirror anvil stdout/stderr to the terminal. */
+  anvilLogs: boolean;
+
+  /** Print version and exit. */
+  version: boolean;
+
+  /** Print help text and exit. */
+  help: boolean;
+
+  /** Don't spawn anvil — assume it's already running on the default port. */
+  noAnvil: boolean;
 
   /**
    * Load an encrypted mnemonic preset by id.
@@ -43,7 +55,11 @@ export interface WanvilFlags {
 export const WANVIL_FLAG_DEFS = [
   { long: "--gui-port", short: null, hasValue: true },
   { long: "--no-gui", short: null, hasValue: false },
-  { long: "--no-open", short: null, hasValue: false },
+  { long: "--open-browser", short: "-O", hasValue: false },
+  { long: "--anvil-logs", short: "-AL", hasValue: false },
+  { long: "--version", short: "-v", hasValue: false },
+  { long: "--help", short: "-h", hasValue: false },
+  { long: "--no-anvil", short: "-N", hasValue: false },
   { long: "--preset", short: "-p", hasValue: true },
   { long: "--save-preset", short: null, hasValue: false },
   { long: "--log-level", short: null, hasValue: true },
@@ -61,7 +77,11 @@ export const WANVIL_FLAGS = new Set<string>(
 export const DEFAULT_WANVIL_FLAGS: WanvilFlags = {
   guiPort: 4269,
   noGui: false,
-  noOpen: false,
+  openBrowser: false,
+  anvilLogs: false,
+  version: false,
+  help: false,
+  noAnvil: false,
   preset: null,
   savePreset: false,
   logLevel: "info",
